@@ -11,6 +11,7 @@ The purpose of this project is to keep compatibility behaviour shared between in
 - temporary OBIS/spec extensions that are not yet available upstream;
 - capability discovery, including measurements that appear after startup;
 - common M-Bus normalization/classification helpers;
+- compatibility helpers only where upstream `dsmr-parser` does not already model the data;
 - shared fixtures and regression tests.
 
 ## Boundary
