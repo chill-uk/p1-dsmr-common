@@ -12,10 +12,17 @@ dependencies = [
   "dsmr-parser>=1.11.1",
 ]
 
+[project.urls]
+Homepage = "https://github.com/chill-uk/p1-dsmr-common"
+Repository = "https://github.com/chill-uk/p1-dsmr-common"
+Issues = "https://github.com/chill-uk/p1-dsmr-common/issues"
+
 [project.optional-dependencies]
 test = [
+  "build>=1.2",
   "pytest>=8.0",
   "ruff>=0.14",
+  "twine>=6.0",
 ]
 
 [tool.setuptools.packages.find]
