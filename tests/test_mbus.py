@@ -53,3 +53,39 @@ def test_version_specific_upstream_mbus_fields() -> None:
         assert reading.value == expected
         assert reading.unit == "m3"
     assert get_mbus_field(v4, "UNKNOWN") is None
+
+
+
+def test_gas_specific_legacy_names_never_apply_to_water_or_heat() -> None:
+    """Gas-only legacy attributes must not become generic measurements."""
+    from decimal import Decimal
+    from types import SimpleNamespace
+
+    for device_type in (4, 7, 10, 99):
+        device = SimpleNamespace(
+            DEVICE_TYPE=SimpleNamespace(value=device_type),
+            EQUIPMENT_IDENTIFIER_GAS=SimpleNamespace(value="not-a-water-or-heat-id"),
+            HOURLY_GAS_METER_READING=SimpleNamespace(
+                value=Decimal("123.45"), unit="m3"
+            ),
+        )
+        assert get_mbus_field(device, "MBUS_METER_READING") is None
+        assert get_mbus_field(device, "MBUS_EQUIPMENT_IDENTIFIER") is None
+
+    # Preserve DSMR 5's generic readings for water and heat.
+    for device_type, unit in ((7, "m3"), (4, "GJ")):
+        reading = SimpleNamespace(value=Decimal("50.25"), unit=unit)
+        device = SimpleNamespace(
+            MBUS_DEVICE_TYPE=SimpleNamespace(value=device_type),
+            MBUS_METER_READING=reading,
+        )
+        assert get_mbus_field(device, "MBUS_METER_READING") is reading
+
+
+def test_gas_specific_fallback_requires_valid_device_type() -> None:
+    from types import SimpleNamespace
+
+    device = SimpleNamespace(
+        HOURLY_GAS_METER_READING=SimpleNamespace(value="123.45")
+    )
+    assert get_mbus_field(device, "MBUS_METER_READING") is None
