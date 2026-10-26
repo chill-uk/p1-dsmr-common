@@ -28,6 +28,36 @@ METER_TYPE_NAMES: dict[int, str] = {
 }
 
 
+
+# Resolve upstream names without treating DSMR 4 gas-only attributes as
+# generic M-Bus measurements. DSMR 5 names always take precedence.
+MBUS_FIELD_ALIASES: dict[str, tuple[str, ...]] = {
+    "MBUS_DEVICE_TYPE": ("MBUS_DEVICE_TYPE", "DEVICE_TYPE"),
+}
+
+
+def get_mbus_field(device: object, name: str) -> object | None:
+    """Resolve an upstream field, with gas-only DSMR 4 compatibility."""
+    for field_name in MBUS_FIELD_ALIASES.get(name, (name,)):
+        field = getattr(device, field_name, None)
+        if field is not None:
+            return field
+
+    # Older DSMR specs use gas-specific fields. Never alias these for
+    # water, heat or unknown device types.
+    if name not in {"MBUS_METER_READING", "MBUS_EQUIPMENT_IDENTIFIER"}:
+        return None
+    type_field = get_mbus_field(device, "MBUS_DEVICE_TYPE")
+    if type_field is None or normalize_device_type(getattr(type_field, "value", None)) != 3:
+        return None
+    gas_name = (
+        "HOURLY_GAS_METER_READING"
+        if name == "MBUS_METER_READING"
+        else "EQUIPMENT_IDENTIFIER_GAS"
+    )
+    return getattr(device, gas_name, None)
+
+
 def normalize_device_type(device_type: object) -> int | None:
     """Convert an M-Bus device type to an integer when possible."""
     if isinstance(device_type, bool):

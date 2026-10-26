@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "p1-dsmr-common"
-version = "0.1.1"
+version = "0.1.2"
 description = "Shared compatibility helpers for Home Assistant P1/DSMR integrations"
 readme = "README.md"
 requires-python = ">=3.13"
